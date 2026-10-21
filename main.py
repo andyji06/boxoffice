@@ -22,19 +22,10 @@ display_date_str = yesterday.strftime("%Y년 %m월 %d일")
 st.caption(f"📅 기준일: **{display_date_str}**")
 
 # -----------------------------------------------------------------------------
-# 2. Streamlit Secrets에서 API 키 불러오기
+# 2. API 키 설정 (직접 지정)
 # -----------------------------------------------------------------------------
-api_key = st.secrets.get("KOBIS_KEY")
-
-if not api_key:
-    st.error(
-        "⚠️ **API 키를 찾을 수 없습니다.**\n\n"
-        "Streamlit Cloud의 **App Settings > Secrets** 메뉴에서 아래와 같이 API 키를 등록했는지 확인해 주세요.\n"
-        "```toml\n"
-        'KOBIS_KEY = "발급받은_인증키"\n'
-        "```"
-    )
-    st.stop()
+# 요청해주신 API 키 (참고: KOBIS 샘플 키이므로 실제 호출 시 인증 에러가 발생할 수 있습니다)
+api_key = "ef377ff7a0e6a8945ef2ab7a5e51b6cd"
 
 # -----------------------------------------------------------------------------
 # 3. KOBIS API 데이터 요청
@@ -46,7 +37,7 @@ params = {
 }
 
 try:
-    response = requests.get(url, timeout=10)
+    response = requests.get(url, params=params, timeout=10)
     response.raise_for_status()  # HTTP status가 200이 아닐 경우 예외 발생
     data = response.json()
 except Exception as e:
@@ -65,7 +56,7 @@ if "faultInfo" in data:
     st.error(
         f"⚠️ **KOBIS API 인증 오류가 발생했습니다.**\n\n"
         f"- 오류 메시지: `{fault_msg}`\n"
-        f"- `.streamlit/secrets.toml` 또는 Streamlit Cloud의 **Secrets**에 입력된 `KOBIS_KEY`값이 정확한지 확인해 주세요."
+        f"- 입력된 API 키가 정확한지, KOBIS 포털에서 발급받은 실제 키인지 확인해 주세요."
     )
     st.stop()
 
