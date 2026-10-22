@@ -112,4 +112,60 @@ def format_rank_change(row):
 df["rankChange"] = df.apply(format_rank_change, axis=1)
 
 # 누적관객 100만 명 이상 영화명에 트로피(🏆) 이모지 추가
-def format_movie
+def format_movie_title(row):
+    title = row["movieNm"]
+    if row["audiAcc"] >= 1_000_000:
+        return f"{title} 🏆"
+    return title
+
+df["displayMovieNm"] = df.apply(format_movie_title, axis=1)
+
+# -----------------------------------------------------------------------------
+# 7. 1위 영화 주요 지표 카드 (Metrics)
+# -----------------------------------------------------------------------------
+top_1 = df.iloc[0]
+
+st.subheader(f"🥇 1위: {top_1['displayMovieNm']}")
+
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.metric(label="일일 관객수", value=f"{top_1['audiCnt']:,} 명")
+with col2:
+    st.metric(label="누적 관객수", value=f"{top_1['audiAcc']:,} 명")
+with col3:
+    st.metric(label="스크린 수", value=f"{top_1['scrnCnt']:,} 개")
+
+st.markdown("---")
+
+# -----------------------------------------------------------------------------
+# 8. 관객수 상위 5편 막대그래프
+# -----------------------------------------------------------------------------
+st.subheader("📊 관객수 상위 5개 영화")
+
+top_5_df = df.head(5)[["movieNm", "audiCnt"]].copy()
+top_5_df.rename(columns={"movieNm": "영화명", "audiCnt": "일일 관객수"}, inplace=True)
+top_5_df.set_index("영화명", inplace=True)
+
+st.bar_chart(top_5_df)
+
+st.markdown("---")
+
+# -----------------------------------------------------------------------------
+# 9. 전체 박스오피스 순위표 (데이터프레임 출력)
+# -----------------------------------------------------------------------------
+st.subheader("📋 일별 박스오피스 전체 순위")
+
+display_df = df[["rank", "rankChange", "displayMovieNm", "openDt", "audiCnt", "audiAcc", "scrnCnt"]].copy()
+display_df.columns = ["순위", "순위변동", "영화명", "개봉일", "관객수", "누적관객", "스크린수"]
+
+st.dataframe(
+    display_df,
+    use_container_width=True,
+    hide_index=True,
+    column_config={
+        "순위": st.column_config.NumberColumn(format="%d위"),
+        "관객수": st.column_config.NumberColumn(format="%,d명"),
+        "누적관객": st.column_config.NumberColumn(format="%,d명"),
+        "스크린수": st.column_config.NumberColumn(format="%,d개"),
+    },
+)
