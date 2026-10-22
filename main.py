@@ -81,11 +81,26 @@ for col in int_cols:
     df[col] = df[col].astype(int)
 
 # -----------------------------------------------------------------------------
-# 5. 🔥 1위 영화 장르에 따른 동적 테마(Dynamic Theme) 적용
+# 5. 🔥 1위 영화 장르/제목에 따른 동적 테마(Dynamic Theme) 적용
 # -----------------------------------------------------------------------------
 top_1 = df.iloc[0]
-top_1_title = top_1["movieNm"]
+top_1_title = str(top_1.get("movieNm", ""))
 
-# 1위 영화의 장르/이름 파악을 위한 텍스트 조건 검사
-# KOBIS 데이터의 genreAlt 속성 활용 또는 제목 패턴 기반 자동 감지
-genre_text = top_1.get("
+# KOBIS 일별 박스오피스 API의 개별 영화 데이터 키값을 안전하게 추출
+genre_text = str(top_1.get("genreAlt", "")) + " " + top_1_title
+
+def get_dynamic_theme(text):
+    if any(k in text for k in ["SF", "액션", "어벤져스", "히어로", "외계"]):
+        return {
+            "name": "히어로/SF 테마",
+            "icon": "🤖",
+            "bg": "#0b0e14",
+            "accent": "#ff3333",
+            "sub_accent": "#e6b800",
+            "chart_color": "#ff3333"
+        }
+    elif any(k in text for k in ["공포", "스릴러", "미스터리", "호러"]):
+        return {
+            "name": "다크 스릴러 테마",
+            "icon": "👻",
+            "bg": "#0d0000",
